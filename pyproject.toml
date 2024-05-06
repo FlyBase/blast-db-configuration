@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "blast-db-configuration"
+version = "0.1.0"
+description = "Code for generating the Alliance BLAST DB configuration file"
+authors = ["Josh Goodman <jogoodma@iu.edu>"]
+license = "MIT"
+readme = "README.md"
+packages = [{ include = "blast_db_configuration", from = "src" }]
+
+[tool.poetry.scripts]
+generate = "blast_db_configuration.__main__:main"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+agr-blast-service-configuration = {git = "https://github.com/alliance-genome/agr_blast_service_configuration.git", branch = "main" }
+typer = "^0.12.3"
+biopython = "^1.83"
+tqdm = "^4.66.4"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.4.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
