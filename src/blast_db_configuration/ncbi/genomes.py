@@ -2,52 +2,68 @@ import ftplib
 import logging
 import re
 import urllib.error
-import urllib.request as req
+from pathlib import Path
 from functools import cache
 from ftplib import FTP
 from typing import Iterator, Optional
+from enum import StrEnum
 from Bio import Entrez
 
 logger = logging.getLogger(__name__)
 
 FTP_HOST = "ftp.ncbi.nlm.nih.gov"
-DEFAULT_ORGANISM_GROUP = "invertebrate"
+
+FtpDirectoryListing = list[tuple[str, dict[str, str]]]
+
+FTP_FILES_CACHE: dict[str, FtpDirectoryListing] = {}
+
+
+class OrganismGroup(StrEnum):
+    """
+    Organism groups used by the NCBI RefSeq genomes FTP server directory structure.
+    see https://ftp.ncbi.nlm.nih.gov/genomes/refseq/
+    """
+
+    ARCHAEA = "archaea"
+    BACTERIA = "bacteria"
+    FUNGI = "fungi"
+    INVERTEBRATE = "invertebrate"
+    METAGENOMES = "metagenomes"
+    MITOCHONDRIA = "mitochondria"
+    PLANT = "plant"
+    PLASMID = "plasmid"
+    PLASTID = "plastid"
+    PROTOZOA = "protozoa"
+    VERTEBRATE_MAMMALIAN = "vertebrate_mammalian"
+    VERTEBRATE_OTHER = "vertebrate_other"
+    VIRAL = "viral"
 
 
 def get_current_genome_assembly_files(
     genus: str,
     species: str,
-    organism_group: str = DEFAULT_ORGANISM_GROUP,
+    email: str,
+    organism_group: str | OrganismGroup = OrganismGroup.INVERTEBRATE,
     file_regex: str = None,
 ) -> Optional[tuple[str, str, str]]:
     """
     Get the current genome assembly directory for a given organism.
 
-    Organism group is one of:
-    - 'archaea'
-    - 'bacteria'
-    - 'fungi'
-    - 'invertebrate'
-    - 'mitochondria'
-    - 'plant'
-    - 'plasmid'
-    - 'plastid'
-    - 'protozoa'
-    - 'vertebrate_mammalian'
-    - 'vertebrate_other'
-    - 'viral'
-
     :param genus: Genus of organism
     :param species: Species of organism
+    :param email: Email to use for the anonymous FTP connection password
     :param organism_group: Organism group (default: 'invertebrate', see above)
     :param file_regex: Regular expression to match files (default: None)
     :return: Tuple of (genome assembly directory, genome assembly file, md5 checksum file)
     """
+    if type(organism_group) is str:
+        organism_group = OrganismGroup(organism_group)
+
     path = f"/genomes/refseq/{organism_group}/{genus}_{species.replace(' ', '_')}/latest_assembly_versions"
-    with FTP(FTP_HOST) as ftp:
+    with FTP(FTP_HOST, timeout=30) as ftp:
         # Use a passive connection to avoid firewall blocking and login.
         ftp.set_pasv(True)
-        ftp.login()
+        ftp.login(user="anonymous", passwd=email)
         # Get a list of files in the directory.
         try:
             files = ftp.mlsd(path)
@@ -76,44 +92,57 @@ def get_current_genome_assembly_files(
             assembly_dir = directories[0]
             # Get a list of files in the latest genome assembly directory.
             try:
-                assembly_files = ftp.mlsd(f"{path}/{assembly_dir}")
+                assembly_ftp_dir = f"{path}/{assembly_dir}"
+                assembly_files = FTP_FILES_CACHE.get(assembly_ftp_dir)
+                if assembly_files is None:
+                    assembly_files = [
+                        file for file in ftp.mlsd(f"{path}/{assembly_dir}")
+                    ]
+                    FTP_FILES_CACHE[assembly_ftp_dir] = assembly_files
                 # Filter files based on the regular expression filter.
-                files = filter_ftp_paths(assembly_files, file_regex)
+                filtered_files = filter_ftp_paths(assembly_files, file_regex)
             except ftplib.all_errors as e:
                 logger.error(f"FTP error while processing {genus} {species}: {e}")
                 return None
 
             files_with_md5 = []
+            checksums = {}
+
             # Look for the md5 of the genome assembly file.
-            for file in files:
-                try:
-                    # Fetch the md5 checksum file
-                    with req.urlopen(
-                        f"ftp://{FTP_HOST}{path}/{assembly_dir}/md5checksums.txt"
-                    ) as response:
-                        md5_body = response.read()
-                    decoded_body = md5_body.decode("utf-8")
-                    # Look for the corresponding genome assembly file checksum.
-                    for md5_line in decoded_body.splitlines():
-                        if file in md5_line:
-                            md5 = re.split(r"\s+", md5_line)[0]
-                            files_with_md5.append(
-                                (
-                                    assembly_dir,
-                                    f"ftp://{FTP_HOST}{path}/{assembly_dir}/{file}",
-                                    md5,
-                                )
-                            )
-                    # Make sure we only found one checksum.
-                    if len(files_with_md5) > 1:
-                        logger.warning(
-                            "Found multiple files with MD5 checksums, using the first one"
+
+            try:
+
+                def get_md5sum(line: str) -> str:
+                    checksum, remote_file = re.split(r"\s+", line)
+                    remote_file = Path(remote_file).name
+                    checksums[remote_file] = checksum
+
+                ftp.retrlines(
+                    f"RETR {path}/{assembly_dir}/md5checksums.txt",
+                    callback=get_md5sum,
+                )
+            except ftplib.all_errors as e:
+                logger.error("Failed to get md5 checksums:\n%s", str(e))
+
+            for file in filtered_files:
+                if file in checksums:
+                    md5sum = checksums[file]
+                    files_with_md5.append(
+                        (
+                            assembly_dir,
+                            f"ftp://{FTP_HOST}{path}/{assembly_dir}/{file}",
+                            md5sum,
                         )
-                    elif len(files_with_md5) == 0:
-                        logger.warning("Could not find MD5 checksum for file")
-                except (urllib.error.URLError, urllib.error.HTTPError) as error:
-                    logger.error(f"Failed to get md5 checksum for {file}:\n{error}")
-                    continue
+                    )
+
+                # Make sure we only found one checksum.
+                if len(files_with_md5) > 1:
+                    logger.warning(
+                        "Found multiple files with MD5 checksums, using the first one"
+                    )
+                elif len(files_with_md5) == 0:
+                    logger.warning("Could not find MD5 checksum for file")
+
             return files_with_md5[0] if len(files_with_md5) >= 1 else None
 
         else:
@@ -144,8 +173,9 @@ def search_ncbi_assemblies(genus: str, species: str) -> list[str]:
     return None
 
 
-@cache
-def filter_ftp_paths(files: Iterator, file_regex: str = None) -> list[str]:
+def filter_ftp_paths(
+    files: Iterator[FtpDirectoryListing], file_regex: str = None
+) -> list[str]:
     """
     Given an iterator for files from the `mlsd` FTP command, filter the files based on the regular expression.
 

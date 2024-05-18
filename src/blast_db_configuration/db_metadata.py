@@ -8,9 +8,17 @@ from .ncbi import genomes as genomes
 logger = logging.getLogger(__name__)
 
 
-def create_flybase_metadata(
-    genus: str, species: str
+def create_metadata_from_ncbi(
+    genus: str, species: str, email: str
 ) -> list[blast_metadata_schema.SequenceMetadata]:
+    """
+    Create the BLAST Database metadata schema using NCBI FTP and API services.
+
+    :param genus: Genus name
+    :param species: Species name
+    :param email: Email address to use for connecting to the NCBI
+    :return: BLAST Database metadata schemas
+    """
     dbs: list[blast_metadata_schema.SequenceMetadata] = []
     assembly_targets = [
         {
@@ -34,7 +42,11 @@ def create_flybase_metadata(
     ]
     for target in assembly_targets:
         assembly_files = genomes.get_current_genome_assembly_files(
-            genus, species, file_regex=target["file_regex"]
+            genus,
+            species,
+            file_regex=target["file_regex"],
+            email=email,
+            organism_group=genomes.OrganismGroup.INVERTEBRATE,
         )
         if not assembly_files:
             logger.error(f"No assembly files found for {genus} {species}")
@@ -53,12 +65,15 @@ def create_flybase_metadata(
                     genus[0], species, assembly_files[0]
                 ),
                 description=target["description"].format(genus, species),
-                taxon_id=taxid,
-                seqtype=target["seqtype"],
+                taxon_id=str(taxid),
+                seqtype=blast_metadata_schema.BlastDBType(target["seqtype"]),
             )
         )
     return dbs
 
+
+def create_dmel_metadata():
+    pass
     # dbs.extend(
     #     [
     #         blast_metadata.BlastDBMetaData(

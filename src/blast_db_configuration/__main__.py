@@ -9,7 +9,7 @@ from tqdm import tqdm
 from Bio import Entrez
 import agr_blast_service_configuration.schemas.metadata as agrdb
 
-from .db_metadata import create_flybase_metadata
+from .db_metadata import create_metadata_from_ncbi
 
 app = typer.Typer()
 
@@ -70,7 +70,7 @@ def generate_config(
     ncbi_email: Annotated[
         str, typer.Option(help="Email to use when connecting to NCBI.")
     ] = DEFAULT_CONFIG.contact,
-    organisms_file: Annotated[
+    organisms: Annotated[
         Path, typer.Option(help="Path to the organisms file.")
     ] = DEFAULT_CONFIG.organisms,
     output: Annotated[Path, typer.Option(help="Output configuration file.")] = None,
@@ -92,15 +92,20 @@ def generate_config(
     )
     all_dbs: list[agrdb.SequenceMetadata] = []
 
-    for genus, species in tqdm(load_organisms(organisms_file)):
+    for genus, species in tqdm(
+        load_organisms(organisms),
+        ncols=100,
+        desc="Processing organisms",
+        unit="organism",
+    ):
         if genus == "Drosophila" and species == "melanogaster":
             pass
         else:
-            all_dbs.extend(create_flybase_metadata(genus, species))
+            all_dbs.extend(create_metadata_from_ncbi(genus, species, ncbi_email))
 
     blast_dbs = agrdb.AgrBlastDatabases(metadata=metadata, data=all_dbs)
     with output.open("w") as outfile:
-        json.dump(blast_dbs.to_dict(), outfile)
+        json.dump(blast_dbs.to_dict(), outfile, indent=2)
 
 
 def load_organisms(organism_json: Path) -> list[list[str, str], ...]:
