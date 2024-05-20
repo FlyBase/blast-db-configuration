@@ -1,9 +1,11 @@
 import logging
+import urllib.request
+from typing import Optional
 
 import agr_blast_service_configuration.schemas.metadata as blast_metadata_schema
 
-from .ncbi import taxonomy as tax
 from .ncbi import genomes as genomes
+from .ncbi import taxonomy as tax
 
 logger = logging.getLogger(__name__)
 
@@ -72,39 +74,72 @@ def create_metadata_from_ncbi(
     return dbs
 
 
-def create_dmel_metadata():
-    pass
-    # dbs.extend(
-    #     [
-    #         blast_metadata.BlastDBMetaData(
-    #             version=options.dmel_annot,
-    #             URI=f"ftp://ftp.flybase.org/genomes/Drosophila_melanogaster/dmel_r{options.dmel_annot}_{options.release}/fasta/dmel-all-chromosome-r{options.dmel_annot}.fasta.gz",
-    #             md5sum="b7bc17acfd655914c68326df8599a9ca",  # TODO - Hard coded for now, need to fetch this from the MD5SUM file
-    #             genus="Drosophila",
-    #             species="melanogaster",
-    #             blast_title=f"D. melanogaster Genome Assembly ({options.dmel_annot})",
-    #             description="Drosophila melanogaster genome assembly",
-    #             taxon_id="NCBITaxon:7227",
-    #             seqtype="nucl",
-    #         ),
-    #         blast_metadata.BlastDBMetaData(
-    #             version=options.dmel_annot,
-    #             URI=f"ftp://ftp.flybase.org/genomes/Drosophila_melanogaster/dmel_r{options.dmel_annot}_{options.release}/fasta/dmel-all-translation-r{options.dmel_annot}.fasta.gz",
-    #             # TODO - Hard coded for now, need to fetch this from the MD5SUM file
-    #             md5sum="e3f959ab0e1026de56e1bd00490450e5",
-    #             genus="Drosophila",
-    #             species="melanogaster",
-    #             blast_title=f"D. melanogaster Protein Sequences ({options.dmel_annot})",
-    #             description="Drosophila melanogaster protein sequences",
-    #             taxon_id="NCBITaxon:7227",
-    #             seqtype="prot",
-    #         ),
-    #     ]
-    # )
-    # flybase_blast_metadata = blast_metadata.AGRBlastDatabases(
-    #     metaData=blast_metadata.AGRBlastMetadata(
-    #         contact=options.email, dataProvider="FlyBase", release=options.release
-    #     ),
-    #     data=dbs,
-    # )
-    # print(flybase_blast_metadata.json())
+def create_dmel_metadata(
+    dmel_annot_release: str,
+) -> list[blast_metadata_schema.SequenceMetadata]:
+    """
+    Generate a list of BLAST DB metadata schemas based on Dmel annot release.
+
+    :param dmel_annot_release: The Dmel annot release
+    :return: List of BLAST DB metadata schemas
+    """
+    dmel_dbs = [
+        {
+            "uri": "https://ftp.flybase.org/blast/dmel-assembly.fasta.gz",
+            "description": f"D. melanogaster Genome Assembly {dmel_annot_release}",
+            "seqtype": blast_metadata_schema.BlastDBType.NUCL,
+            "md5_sum": None,
+        },
+        {
+            "uri": "https://ftp.flybase.org/blast/dmel-intergenic.fasta.gz",
+            "description": f"D. melanogaster Intergenic Regions {dmel_annot_release}",
+            "seqtype": blast_metadata_schema.BlastDBType.NUCL,
+            "md5_sum": None,
+        },
+        {
+            "uri": "https://ftp.flybase.org/blast/dmel-transcript.fasta.gz",
+            "description": f"D. melanogaster Transcripts {dmel_annot_release}",
+            "seqtype": blast_metadata_schema.BlastDBType.NUCL,
+            "md5_sum": None,
+        },
+        {
+            "uri": "https://ftp.flybase.org/blast/dmel-translation.fasta.gz",
+            "description": f"D. melanogaster Proteins {dmel_annot_release}",
+            "seqtype": blast_metadata_schema.BlastDBType.PROT,
+            "md5_sum": None,
+        },
+        {
+            "uri": "https://ftp.flybase.org/blast/dmel-transposon.fasta.gz",
+            "description": f"D. melanogaster Transposons {dmel_annot_release}",
+            "seqtype": blast_metadata_schema.BlastDBType.NUCL,
+            "md5_sum": None,
+        },
+    ]
+    # TODO: read in checksums and assign them to the appropriate DB.
+    return [
+        blast_metadata_schema.SequenceMetadata(
+            version=dmel_annot_release,
+            uri=db.get("uri"),
+            md5_sum="MD5",
+            genus="Drosophila",
+            species="melanogaster",
+            blast_title=db.get("description"),
+            description=db.get("description"),
+            taxon_id="7227",
+            seqtype=db.get("seqtype"),
+        )
+        for db in dmel_dbs
+    ]
+
+
+def fetch_dmel_checksums(uri: str) -> Optional[str]:
+    """
+    Get the current Dmel FASTA checksums.
+
+    :param uri: The URI of the checksum file
+    :return: The text content of the checksum file
+    """
+    with urllib.request.urlopen(uri) as response:
+        md5_checksums = response.read().decode("utf-8")
+        return md5_checksums
+    return None

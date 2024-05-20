@@ -1,15 +1,16 @@
-from dataclasses import dataclass
-from typing_extensions import Annotated
-from datetime import datetime
-from pathlib import Path
 import json
 import logging
-import typer
-from tqdm import tqdm
-from Bio import Entrez
-import agr_blast_service_configuration.schemas.metadata as agrdb
+from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
 
-from .db_metadata import create_metadata_from_ncbi
+import agr_blast_service_configuration.schemas.metadata as agrdb
+import typer
+from Bio import Entrez
+from tqdm import tqdm
+from typing_extensions import Annotated
+
+from .db_metadata import create_dmel_metadata, create_metadata_from_ncbi
 
 app = typer.Typer()
 
@@ -44,6 +45,9 @@ DEFAULT_CONFIG = DefaultBlastDbConfiguration()
 @app.command()
 def generate_config(
     release: Annotated[str, typer.Option(help="The FlyBase release version")],
+    dmel_annot_release: Annotated[
+        str, typer.Option(help="The Dmel annotation release version e.g. r6.57")
+    ],
     contact: Annotated[
         type(DEFAULT_CONFIG.contact),
         typer.Option(help="Email of the FlyBase technical contact."),
@@ -99,7 +103,7 @@ def generate_config(
         unit="organism",
     ):
         if genus == "Drosophila" and species == "melanogaster":
-            pass
+            all_dbs.extend(create_dmel_metadata(dmel_annot_release))
         else:
             all_dbs.extend(create_metadata_from_ncbi(genus, species, ncbi_email))
 
