@@ -81,17 +81,6 @@ def generate(
 ) -> None:
     """
     Generate a configuration file for the FlyBase BLAST databases.
-    :param release: The FlyBase release version.
-    :param dmel_annot_release:  The Dmel annotation release version.
-    :param contact:  Email of the FlyBase technical contact.
-    :param data_provider:  The provider name assigned to FlyBase by the Alliance.
-    :param date_produced:  The date this configuration file was produced.
-    :param homepage_url: The URL for FlyBase homepage.
-    :param logo_url:  The URL for FlyBase logo.
-    :param public:  Whether the configuration file is public or private.
-    :param ncbi_email: The email to use when connecting to NCBI.
-    :param organisms: Path to the organisms file.
-    :param output: The output configuration file.
     """
     if output is None:
         output = PROJECT_ROOT_DIR / "conf" / f"databases.{data_provider}.{release}.json"
