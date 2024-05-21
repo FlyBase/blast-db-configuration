@@ -1,7 +1,6 @@
 import ftplib
 import logging
 import re
-import urllib.error
 from pathlib import Path
 from functools import cache
 from ftplib import FTP
@@ -56,7 +55,7 @@ def get_current_genome_assembly_files(
     :param file_regex: Regular expression to match files (default: None)
     :return: Tuple of (genome assembly directory, genome assembly file, md5 checksum file)
     """
-    if type(organism_group) is str:
+    if isinstance(organism_group, str):
         organism_group = OrganismGroup(organism_group)
 
     path = f"/genomes/refseq/{organism_group}/{genus}_{species.replace(' ', '_')}/latest_assembly_versions"

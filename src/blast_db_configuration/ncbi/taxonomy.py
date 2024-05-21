@@ -15,7 +15,7 @@ def get_taxonomy_id(genus: str, species: str) -> Optional[int]:
     :return: NCBI taxonomy ID.
     """
     try:
-        logger.debug(f"Searching for %s %s", genus, species)
+        logger.debug("Searching for %s %s", genus, species)
         handle = Entrez.esearch(db="taxonomy", term=f"{genus} {species}[SCIN]")
         record = Entrez.read(handle)
         num_results = int(record["Count"])

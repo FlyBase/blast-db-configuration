@@ -1,6 +1,5 @@
 import logging
 import urllib.request
-from typing import Optional
 
 import agr_blast_service_configuration.schemas.metadata as blast_metadata_schema
 

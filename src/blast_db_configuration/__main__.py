@@ -105,7 +105,7 @@ def generate(
         desc="Processing organisms",
         unit="organism",
     ):
-        logger.debug(f"Processing %s %s", genus, species)
+        logger.debug("Processing %s %s", genus, species)
         if genus == "Drosophila" and species == "melanogaster":
             all_dbs.extend(create_dmel_metadata(dmel_annot_release))
         else:

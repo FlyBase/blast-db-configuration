@@ -16,10 +16,7 @@ agr-blast-service-configuration = {git = "https://github.com/alliance-genome/agr
 typer = "^0.12.3"
 biopython = "^1.83"
 tqdm = "^4.66.4"
-
-[tool.poetry.group.dev.dependencies]
-black = "^24.4.2"
-isort = "^5.13.2"
+ruff = "^0.4.4"
 
 [build-system]
 requires = ["poetry-core"]

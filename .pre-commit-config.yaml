@@ -13,15 +13,11 @@ repos:
       - id: check-toml
       - id: check-json
       - id: check-added-large-files
-  - repo: local
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.4.4
     hooks:
-      - id: black
-        name: black
-        entry: poetry run black
-        language: system
-        types: [file, python]
-      - id: isort
-        name: isort
-        entry: poetry run isort
-        language: system
-        types: [file, python]
+      # Run the linter.
+      - id: ruff
+      # Run the formatter.
+      - id: ruff-format
