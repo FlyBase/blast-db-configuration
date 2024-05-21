@@ -85,42 +85,49 @@ def create_dmel_metadata(
     """
     dmel_dbs = [
         {
-            "uri": "https://ftp.flybase.org/blast/dmel-assembly.fasta.gz",
+            "uri": "https://ftp.flybase.org/alliance/blast/dmel-assembly.fasta.gz",
             "description": f"D. melanogaster Genome Assembly {dmel_annot_release}",
             "seqtype": blast_metadata_schema.BlastDBType.NUCL,
             "md5_sum": None,
         },
         {
-            "uri": "https://ftp.flybase.org/blast/dmel-intergenic.fasta.gz",
+            "uri": "https://ftp.flybase.org/alliance/blast/dmel-intergenic.fasta.gz",
             "description": f"D. melanogaster Intergenic Regions {dmel_annot_release}",
             "seqtype": blast_metadata_schema.BlastDBType.NUCL,
             "md5_sum": None,
         },
         {
-            "uri": "https://ftp.flybase.org/blast/dmel-transcript.fasta.gz",
+            "uri": "https://ftp.flybase.org/alliance/blast/dmel-transcript.fasta.gz",
             "description": f"D. melanogaster Transcripts {dmel_annot_release}",
             "seqtype": blast_metadata_schema.BlastDBType.NUCL,
             "md5_sum": None,
         },
         {
-            "uri": "https://ftp.flybase.org/blast/dmel-translation.fasta.gz",
+            "uri": "https://ftp.flybase.org/alliance/blast/dmel-translation.fasta.gz",
             "description": f"D. melanogaster Proteins {dmel_annot_release}",
             "seqtype": blast_metadata_schema.BlastDBType.PROT,
             "md5_sum": None,
         },
         {
-            "uri": "https://ftp.flybase.org/blast/dmel-transposon.fasta.gz",
+            "uri": "https://ftp.flybase.org/alliance/blast/dmel-transposon.fasta.gz",
             "description": f"D. melanogaster Transposons {dmel_annot_release}",
             "seqtype": blast_metadata_schema.BlastDBType.NUCL,
             "md5_sum": None,
         },
     ]
-    # TODO: read in checksums and assign them to the appropriate DB.
+    checksums = fetch_dmel_checksums(
+        "https://ftp.flybase.org/alliance/blast/md5sum.txt"
+    )
+    for db in dmel_dbs:
+        uri = db.get("uri")
+        key = uri[uri.rfind("/") + 1 :]
+        db["md5_sum"] = checksums.get(key)
+
     return [
         blast_metadata_schema.SequenceMetadata(
             version=dmel_annot_release,
             uri=db.get("uri"),
-            md5_sum="MD5",
+            md5_sum=db.get("md5_sum"),
             genus="Drosophila",
             species="melanogaster",
             blast_title=db.get("description"),
@@ -132,14 +139,17 @@ def create_dmel_metadata(
     ]
 
 
-def fetch_dmel_checksums(uri: str) -> Optional[str]:
+def fetch_dmel_checksums(uri: str) -> dict[str, str]:
     """
     Get the current Dmel FASTA checksums.
 
     :param uri: The URI of the checksum file
     :return: The text content of the checksum file
     """
+    checksums = {}
     with urllib.request.urlopen(uri) as response:
-        md5_checksums = response.read().decode("utf-8")
-        return md5_checksums
-    return None
+        md5_lines = response.read().decode("utf-8").splitlines()
+        for line in md5_lines:
+            md5, filename = line.split()
+            checksums[filename] = md5
+    return checksums

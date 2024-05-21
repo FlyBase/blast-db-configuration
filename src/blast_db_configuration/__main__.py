@@ -19,9 +19,9 @@ LOG_DIR = PROJECT_ROOT_DIR / "logs"
 LOG_DIR.mkdir(exist_ok=True)
 
 logging.basicConfig(
-    filename=LOG_DIR / "create_flybase_metadata.log",
+    # filename=LOG_DIR / "create_flybase_metadata.log",
     encoding="utf-8",
-    level=logging.DEBUG,
+    level=logging.INFO,
     format="%(asctime)s [%(levelname)s] [%(name)s:%(lineno)d] %(message)s",
     datefmt="%m/%d/%Y %I:%M:%S %p",
 )
@@ -43,7 +43,7 @@ DEFAULT_CONFIG = DefaultBlastDbConfiguration()
 
 
 @app.command()
-def generate_config(
+def generate(
     release: Annotated[str, typer.Option(help="The FlyBase release version")],
     dmel_annot_release: Annotated[
         str, typer.Option(help="The Dmel annotation release version e.g. r6.57")
@@ -79,6 +79,20 @@ def generate_config(
     ] = DEFAULT_CONFIG.organisms,
     output: Annotated[Path, typer.Option(help="Output configuration file.")] = None,
 ) -> None:
+    """
+    Generate a configuration file for the FlyBase BLAST databases.
+    :param release: The FlyBase release version.
+    :param dmel_annot_release:  The Dmel annotation release version.
+    :param contact:  Email of the FlyBase technical contact.
+    :param data_provider:  The provider name assigned to FlyBase by the Alliance.
+    :param date_produced:  The date this configuration file was produced.
+    :param homepage_url: The URL for FlyBase homepage.
+    :param logo_url:  The URL for FlyBase logo.
+    :param public:  Whether the configuration file is public or private.
+    :param ncbi_email: The email to use when connecting to NCBI.
+    :param organisms: Path to the organisms file.
+    :param output: The output configuration file.
+    """
     if output is None:
         output = PROJECT_ROOT_DIR / "conf" / f"databases.{data_provider}.{release}.json"
         output.parent.mkdir(parents=True, exist_ok=True)
@@ -102,6 +116,7 @@ def generate_config(
         desc="Processing organisms",
         unit="organism",
     ):
+        logger.debug(f"Processing %s %s", genus, species)
         if genus == "Drosophila" and species == "melanogaster":
             all_dbs.extend(create_dmel_metadata(dmel_annot_release))
         else:
