@@ -570,6 +570,20 @@
       "taxon_id": "7227",
       "uri": "https://ftp.flybase.org/alliance/blast/dmel-assembly.fasta.gz",
       "version": "r6.59",
+      "genome_browser": {
+        "assembly": "Drosophila_melanogaster",
+        "data_url": "https://s3.amazonaws.com/agrjbrowse/MOD-jbrowses/FlyBase/FB2024_04/d_melanogaster/",
+        "gene_track": "Curated Genes",
+        "mod_gene_url": "https://flybase.org/reports/",
+        "tracks": [
+          "Drosophila_melanogaster_all_genes",
+          "Drosophila_melanogaster_ht_variants",
+          "Drosophila_melanogaster_variants",
+          "Drosophila_melanogaster_multiple-variant_alleles"
+        ],
+        "type": "jbrowse",
+        "url": "https://flybase.org/jbrowse/?data=data/json/dmel"
+      },
       "seqtype": "nucl"
     },
     {
@@ -2171,7 +2185,7 @@
   "metadata": {
     "contact": "iudev@morgan.harvard.edu",
     "dataProvider": "FB",
-    "dateProduced": "2024-09-08T18:57:52.919636",
+    "dateProduced": "2024-10-01T03:54:26.835823",
     "homepage_url": "https://flybase.org",
     "logo_url": "https://flybase.org/images/fly_logo.png",
     "release": "FB2024_04",
