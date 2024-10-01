@@ -107,7 +107,7 @@ def generate(
     ):
         logger.debug("Processing %s %s", genus, species)
         if genus == "Drosophila" and species == "melanogaster":
-            all_dbs.extend(create_dmel_metadata(dmel_annot_release))
+            all_dbs.extend(create_dmel_metadata(dmel_annot_release, release))
         else:
             all_dbs.extend(create_metadata_from_ncbi(genus, species, ncbi_email))
 

@@ -74,12 +74,13 @@ def create_metadata_from_ncbi(
 
 
 def create_dmel_metadata(
-    dmel_annot_release: str,
+    dmel_annot_release: str, release: str
 ) -> list[blast_metadata_schema.SequenceMetadata]:
     """
     Generate a list of BLAST DB metadata schemas based on Dmel annot release.
 
     :param dmel_annot_release: The Dmel annot release
+    :param release: The FlyBase release
     :return: List of BLAST DB metadata schemas
     """
     dmel_dbs = [
@@ -88,6 +89,20 @@ def create_dmel_metadata(
             "description": f"D. melanogaster Genome Assembly {dmel_annot_release}",
             "seqtype": blast_metadata_schema.BlastDBType.NUCL,
             "md5_sum": None,
+            "genome_browser": blast_metadata_schema.GenomeBrowser(
+                assembly="Drosophila_melanogaster",
+                data_url=f"https://s3.amazonaws.com/agrjbrowse/MOD-jbrowses/FlyBase/{release}/d_melanogaster/",
+                gene_track="Curated Genes",
+                mod_gene_url="https://flybase.org/reports/",
+                tracks=[
+                    "Drosophila_melanogaster_all_genes",
+                    "Drosophila_melanogaster_ht_variants",
+                    "Drosophila_melanogaster_variants",
+                    "Drosophila_melanogaster_multiple-variant_alleles",
+                ],
+                type=blast_metadata_schema.GenomeBrowseType.JBROWSE,
+                url="https://flybase.org/jbrowse/?data=data/json/dmel",
+            ),
         },
         {
             "uri": "https://ftp.flybase.org/alliance/blast/dmel-intergenic.fasta.gz",
@@ -133,6 +148,7 @@ def create_dmel_metadata(
             description=db.get("description"),
             taxon_id="7227",
             seqtype=db.get("seqtype"),
+            genome_browser=db.get("genome_browser"),
         )
         for db in dmel_dbs
     ]
