@@ -54,7 +54,7 @@ jobs:
         run: poetry run generate --release ${{ github.event.inputs.FB-release }} --dmel-annot-release ${{ github.event.inputs.dmel-annot-release }}
 
       - name: Create PR
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v7
         with:
           commit-message: ${{ github.event.inputs.FB-release }} BLAST config
           branch: ${{ github.event.inputs.FB-release }}-blast-config
