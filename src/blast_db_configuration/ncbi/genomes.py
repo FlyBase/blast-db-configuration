@@ -12,9 +12,9 @@ logger = logging.getLogger(__name__)
 
 FTP_HOST = "ftp.ncbi.nlm.nih.gov"
 
-FtpDirectoryListing = list[tuple[str, dict[str, str]]]
+FtpDirectoryListing = tuple[str, dict[str, str]]
 
-FTP_FILES_CACHE: dict[str, FtpDirectoryListing] = {}
+FTP_FILES_CACHE: dict[str, list[FtpDirectoryListing]] = {}
 
 
 class OrganismGroup(StrEnum):
@@ -111,7 +111,7 @@ def get_current_genome_assembly_files(
 
             try:
 
-                def get_md5sum(line: str) -> str:
+                def get_md5sum(line: str) -> None:
                     checksum, remote_file = re.split(r"\s+", line)
                     remote_file = Path(remote_file).name
                     checksums[remote_file] = checksum
@@ -150,11 +150,12 @@ def get_current_genome_assembly_files(
 
 
 @cache
-def search_ncbi_assemblies(genus: str, species: str) -> list[str]:
+def search_ncbi_assemblies(genus: str, species: str) -> Optional[list[str]]:
     try:
         assembly_query = f"({genus} {species}[Organism]) AND (latest[filter] AND all[filter] NOT anomalous[filter])"
         assembly_handle = Entrez.esearch(db="assembly", term=assembly_query)
         assembly_records = Entrez.read(assembly_handle)
+        assembly_handle.close()
         num_results = int(assembly_records.get("Count", 0))
         if num_results == 0:
             return []
@@ -163,17 +164,16 @@ def search_ncbi_assemblies(genus: str, species: str) -> list[str]:
                 db="assembly", id=",".join(assembly_records["IdList"])
             )
             efetch_records = Entrez.read(efetch_handle)
+            efetch_handle.close()
             print(efetch_records)
     except IOError as ioe:
         logger.error(ioe)
-    finally:
-        assembly_handle.close()
-        efetch_handle.close()
     return None
 
 
 def filter_ftp_paths(
-    files: Iterator[FtpDirectoryListing], file_regex: str = None
+    files: Iterator[FtpDirectoryListing] | list[FtpDirectoryListing],
+    file_regex: str = None,
 ) -> list[str]:
     """
     Given an iterator for files from the `mlsd` FTP command, filter the files based on the regular expression.

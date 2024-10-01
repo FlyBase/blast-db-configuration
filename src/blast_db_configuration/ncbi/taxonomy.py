@@ -18,6 +18,7 @@ def get_taxonomy_id(genus: str, species: str) -> Optional[int]:
         logger.debug("Searching for %s %s", genus, species)
         handle = Entrez.esearch(db="taxonomy", term=f"{genus} {species}[SCIN]")
         record = Entrez.read(handle)
+        handle.close()
         num_results = int(record["Count"])
         if num_results == 1:
             return int(record["IdList"][0])
@@ -25,6 +26,4 @@ def get_taxonomy_id(genus: str, species: str) -> Optional[int]:
             raise ValueError(f"{num_results} results found for {genus} {species}")
     except IOError as ioe:
         logger.error(ioe)
-    finally:
-        handle.close()
     return None
