@@ -570,6 +570,20 @@
       "taxon_id": "7227",
       "uri": "https://ftp.flybase.org/alliance/blast/dmel-assembly.fasta.gz",
       "version": "r6.59",
+      "genome_browser": {
+        "assembly": "Drosophila_melanogaster",
+        "data_url": "https://s3.amazonaws.com/agrjbrowse/MOD-jbrowses/FlyBase/FB2024_04/d_melanogaster/",
+        "gene_track": "Curated Genes",
+        "mod_gene_url": "https://flybase.org/reports/",
+        "tracks": [
+          "Drosophila_melanogaster_all_genes",
+          "Drosophila_melanogaster_ht_variants",
+          "Drosophila_melanogaster_variants",
+          "Drosophila_melanogaster_multiple-variant_alleles"
+        ],
+        "type": "jbrowse",
+        "url": "https://flybase.org/jbrowse/?data=data/json/dmel"
+      },
       "seqtype": "nucl"
     },
     {
@@ -2102,6 +2116,39 @@
       "seqtype": "prot"
     },
     {
+      "blast_title": "P. humanus Genome Assembly (GCF_000006295.1_JCVI_LOUSE_1.0)",
+      "description": "Pediculus humanus genome assembly",
+      "genus": "Pediculus",
+      "md5sum": "95013226eb9e37ee33880b6b78ad2e52",
+      "species": "humanus",
+      "taxon_id": "121225",
+      "uri": "ftp://ftp.ncbi.nlm.nih.gov/genomes/refseq/invertebrate/Pediculus_humanus/latest_assembly_versions/GCF_000006295.1_JCVI_LOUSE_1.0/GCF_000006295.1_JCVI_LOUSE_1.0_genomic.fna.gz",
+      "version": "GCF_000006295.1_JCVI_LOUSE_1.0",
+      "seqtype": "nucl"
+    },
+    {
+      "blast_title": "P. humanus RNA Sequences (GCF_000006295.1_JCVI_LOUSE_1.0)",
+      "description": "Pediculus humanus RNA sequences",
+      "genus": "Pediculus",
+      "md5sum": "71afca186069745c365b3ada90267984",
+      "species": "humanus",
+      "taxon_id": "121225",
+      "uri": "ftp://ftp.ncbi.nlm.nih.gov/genomes/refseq/invertebrate/Pediculus_humanus/latest_assembly_versions/GCF_000006295.1_JCVI_LOUSE_1.0/GCF_000006295.1_JCVI_LOUSE_1.0_rna.fna.gz",
+      "version": "GCF_000006295.1_JCVI_LOUSE_1.0",
+      "seqtype": "nucl"
+    },
+    {
+      "blast_title": "P. humanus Protein Sequences (GCF_000006295.1_JCVI_LOUSE_1.0)",
+      "description": "Pediculus humanus protein sequences",
+      "genus": "Pediculus",
+      "md5sum": "4d2b8901f0390d8ebec770e93a0a048b",
+      "species": "humanus",
+      "taxon_id": "121225",
+      "uri": "ftp://ftp.ncbi.nlm.nih.gov/genomes/refseq/invertebrate/Pediculus_humanus/latest_assembly_versions/GCF_000006295.1_JCVI_LOUSE_1.0/GCF_000006295.1_JCVI_LOUSE_1.0_protein.faa.gz",
+      "version": "GCF_000006295.1_JCVI_LOUSE_1.0",
+      "seqtype": "prot"
+    },
+    {
       "blast_title": "I. scapularis Genome Assembly (GCF_016920785.2_ASM1692078v2)",
       "description": "Ixodes scapularis genome assembly",
       "genus": "Ixodes",
@@ -2171,7 +2218,7 @@
   "metadata": {
     "contact": "iudev@morgan.harvard.edu",
     "dataProvider": "FB",
-    "dateProduced": "2024-09-08T18:57:52.919636",
+    "dateProduced": "2024-10-01T04:17:00.653360",
     "homepage_url": "https://flybase.org",
     "logo_url": "https://flybase.org/images/fly_logo.png",
     "release": "FB2024_04",
