@@ -85,7 +85,7 @@ def create_dmel_metadata(
     """
     dmel_dbs = [
         {
-            "uri": "https://ftp.flybase.org/alliance/blast/dmel-assembly.fasta.gz",
+            "uri": "https://s3ftp.flybase.org/alliance/blast/dmel-assembly.fasta.gz",
             "description": f"D. melanogaster Genome Assembly {dmel_annot_release}",
             "seqtype": blast_metadata_schema.BlastDBType.NUCL,
             "md5_sum": None,
@@ -105,32 +105,32 @@ def create_dmel_metadata(
             ),
         },
         {
-            "uri": "https://ftp.flybase.org/alliance/blast/dmel-intergenic.fasta.gz",
+            "uri": "https://s3ftp.flybase.org/alliance/blast/dmel-intergenic.fasta.gz",
             "description": f"D. melanogaster Intergenic Regions {dmel_annot_release}",
             "seqtype": blast_metadata_schema.BlastDBType.NUCL,
             "md5_sum": None,
         },
         {
-            "uri": "https://ftp.flybase.org/alliance/blast/dmel-transcript.fasta.gz",
+            "uri": "https://s3ftp.flybase.org/alliance/blast/dmel-transcript.fasta.gz",
             "description": f"D. melanogaster Transcripts {dmel_annot_release}",
             "seqtype": blast_metadata_schema.BlastDBType.NUCL,
             "md5_sum": None,
         },
         {
-            "uri": "https://ftp.flybase.org/alliance/blast/dmel-translation.fasta.gz",
+            "uri": "https://s3ftp.flybase.org/alliance/blast/dmel-translation.fasta.gz",
             "description": f"D. melanogaster Proteins {dmel_annot_release}",
             "seqtype": blast_metadata_schema.BlastDBType.PROT,
             "md5_sum": None,
         },
         {
-            "uri": "https://ftp.flybase.org/alliance/blast/dmel-transposon.fasta.gz",
+            "uri": "https://s3ftp.flybase.org/alliance/blast/dmel-transposon.fasta.gz",
             "description": f"D. melanogaster Transposons {dmel_annot_release}",
             "seqtype": blast_metadata_schema.BlastDBType.NUCL,
             "md5_sum": None,
         },
     ]
     checksums = fetch_dmel_checksums(
-        "https://ftp.flybase.org/alliance/blast/md5sum.txt"
+        "https://s3ftp.flybase.org/alliance/blast/md5sum.txt"
     )
     for db in dmel_dbs:
         uri = db.get("uri")
